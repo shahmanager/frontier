@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "frontier-ai"
+version = "3.2.0"
+description = "1-shot build discipline for AI coding: leases, evidence, drift, relevance compaction."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+keywords = ["ai-agents", "coding-agent", "multi-agent", "context", "verification", "claude", "opencode"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+
+[tool.setuptools]
+script-files = ["scripts/frontier.py"]
+
+[tool.setuptools.packages.find]
+include = ["*"]

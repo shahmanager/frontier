@@ -1,0 +1,9 @@
+{
+  "skills": [
+    { "name": "codegraph", "trigger": "symbol|call.?graph|dependency|trace|architecture|cross-file|who calls|impact" },
+    { "name": "ponytail", "trigger": "over.?engineer|simplif|yagni|minimal|refactor|bloat|dead code" },
+    { "name": "caveman", "trigger": "token|be brief|less tokens|terse|compress|context limit" },
+    { "name": "embedded-systems", "trigger": "firmware|rtos|bare.?metal|stm32|esp32|mcu|interrupt|dma" },
+    { "name": "frontier", "trigger": "new task|multi.?agent|lease|scaffold|handoff|AGEN" }
+  ]
+}

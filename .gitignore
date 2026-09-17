@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.agents/leases/
+.agents/signals/
+.agents/sentinel/
+.agents/evidence/
+memory/compacted.md
+.codegraph/ctx.md
+docs/TASKS/_TEMPLATE.md
