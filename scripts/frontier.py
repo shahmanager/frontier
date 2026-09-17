@@ -456,6 +456,10 @@ def cmd_selftest():
                 check("drift detects", False)
             except SystemExit as e:
                 check("drift detects", e.code == 1)
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                cmd_bench()
+            check("bench runs", "bench OK" in buf.getvalue())
             Path("docs/LEARNINGS.md").write_text(
                 "# L\n\n- 2026-01-02 Widget cache stampede "
                 "-> missing lock -> add lock\n")
@@ -672,6 +676,94 @@ def cmd_review():
         print("3. No risk flags. Verify behavior, merge.")
 
 
+# ---------------------------------------------------------------- bench
+def cmd_bench():
+    """Measure real numbers: context reduction, recall, lease, drift.
+
+    Runs on synthetic data in a temp dir. All stdlib. Prints a table.
+    """
+    import contextlib
+    import io
+    import tempfile
+
+    def t_ms(fn, n=5):
+        ts = []
+        for _ in range(n):
+            t0 = time.perf_counter()
+            with contextlib.redirect_stdout(io.StringIO()):
+                fn()
+            ts.append((time.perf_counter() - t0) * 1000)
+        return sum(ts) / n
+
+    cwd = os.getcwd()
+    with tempfile.TemporaryDirectory() as td:
+        os.chdir(td)
+        try:
+            Path("docs/TASKS").mkdir(parents=True)
+            Path("memory").mkdir()
+            # 40 synthetic blocks, 15KW-ish total
+            kw = ("component plan collision heartbeat evidence scope "
+                  "fingerprint recall compact lease").split()
+            blocks = [f"## Block {i}\n\n{kw[i % len(kw)]} narrative "
+                      f"{'payload' if i % 4 == 0 else 'chatter'} "
+                      + " ".join(f"w{j}" for j in range(14)) for i in range(40)]
+            Path("memory/big.md").write_text("\n---\n".join(blocks))
+            Path("docs/TASKS/T.md").write_text(
+                "id: T\nstatus: planned\nsymbol: Widget\ncomponent: plan\n"
+                "---\n## PROOF\n- PROOF: x\n")
+            Path("docs/LEARNINGS.md").write_text(
+                "# L\n- 2026-01-01 Widget plan collision expired scope "
+                "-> fingerprint -> acquire\n")
+            # real files for drift fingerprint
+            Path("src").mkdir()
+            for i in range(200):
+                Path(f"src/f{i}.ts").write_text(f"// f{i}\n" + "x" * 2000)
+
+            def b_compact():
+                cmd_compact("memory/big.md", "memory/compacted.md",
+                            "docs/TASKS/T.md")
+
+            def b_recall():
+                cmd_recall(["Widget", "plan"])
+
+            def b_lease():
+                cmd_lease(argparse.Namespace(
+                    cmd="acquire", task="T", agent="bench",
+                    rest=["src/f*.ts"], force=False))
+
+            def b_drift():
+                cmd_drift("T", "bench")
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                b_compact()
+            k = len(Path("memory/big.md").read_text().splitlines())
+            r = len(Path("memory/compacted.md").read_text().splitlines())
+            def b_done():
+                cmd_lease(argparse.Namespace(cmd="release", task="T",
+                                            agent="bench", rest=[]))
+            with contextlib.redirect_stdout(io.StringIO()):
+                b_done()
+            rows = [
+                ("compact", "context kept: big->compacted",
+                 f"{r}/{k} lines ({100.0*r/k:.0f}%)",
+                 t_ms(b_compact)),
+                ("recall", "tier-0 retrieval (LEARNINGS+memory)",
+                 "top-5 hits", t_ms(b_recall)),
+                ("lease acquire+fp", "200-file sha1 scope fingerprint",
+                 "1 lease", t_ms(b_lease)),
+                ("drift", "200-file re-fingerprint + compare",
+                 "clean|exit1", t_ms(b_drift)),
+            ]
+            print(f"\n{'bench':<18} {'what':<44} {'result':<12} {'ms avg':>7}")
+            print("-" * 85)
+            for name, what, res, ms in rows:
+                print(f"{name:<18} {what:<44} {res:<12} {ms:6.1f}")
+        finally:
+            os.chdir(cwd)
+    print("bench OK")
+
+
+# ---------------------------------------------------------------- main dispatch
 def main():
     ap = argparse.ArgumentParser(prog="frontier")
     sub = ap.add_subparsers(dest="sub", required=True)
@@ -713,6 +805,7 @@ def main():
     p = sub.add_parser("resume")
     p.add_argument("agent")
     p = sub.add_parser("review")
+    p = sub.add_parser("bench")
     a = ap.parse_args()
     if a.sub == "init":
         cmd_init(a.target)
@@ -742,6 +835,8 @@ def main():
         cmd_resume(a.agent)
     elif a.sub == "review":
         cmd_review()
+    elif a.sub == "bench":
+        cmd_bench()
 
 
 if __name__ == "__main__":

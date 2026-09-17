@@ -73,7 +73,8 @@ python scripts/frontier.py validate   # gate: frontmatter, line budget, secrets
 `evidence` (bind proof to SHA, run instead of bare test cmds) ·
 `review` (diff-risk checklist for the reviewer) ·
 `resume` (leases + signals + broadcasts after `/clear`) ·
-`doctor` (machine check) · `selftest` (23 checks, run after every skill upgrade).
+`doctor` (machine check) · `selftest` (24 checks, run after every skill upgrade) ·
+`bench` (measured numbers for compact/recall/lease/drift).
 
 Docs: `seek.md` (read-down order) · `ladder.md` (7-rung + debug loop + test-first) ·
 `output.md` (caveman-lite) · `LEASE.md` (multi-agent protocol) · SKILL.md §13 (git guardrails) · SKILL.md §14 (deferred tools).

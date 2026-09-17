@@ -115,7 +115,8 @@ python scripts/frontier.py evidence <task> -- <cmd>  # bind exit code to git SHA
 python scripts/frontier.py review                  # diff-risk checklist
 python scripts/frontier.py resume <agent>          # leases + signals + broadcasts
 python scripts/frontier.py doctor                  # machine check
-python scripts/frontier.py selftest                # 23-check end-to-end proof
+python scripts/frontier.py selftest                # 24-check end-to-end proof
+python scripts/frontier.py bench                   # measured numbers (compact/recall/lease/drift)
 python scripts/frontier.py lease acquire T A S... --force --ttl N  # forced coexistence
 ```
 
